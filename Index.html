@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WAVECUT — Audio Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Syne:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="app">
+      <header class="header">
+        <div class="logo">
+          <span class="logo-glyph">◈</span>
+          <span class="logo-name">WAVECUT</span>
+          <span class="logo-tag">audio editor</span>
+        </div>
+        <div class="header-right">
+          <div class="local-badge">
+            <span class="local-dot"></span>100% local
+          </div>
+        </div>
+      </header>
+
+      <!-- DROP ZONE -->
+      <div class="dropzone" id="dropZone">
+        <input type="file" id="fileInput" accept="audio/*" />
+        <div class="dz-inner">
+          <div class="dz-icon">
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <path
+                d="M18 6v18M8 16l10-10 10 10"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M4 28h28"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <p class="dz-title">Arraste seu áudio aqui</p>
+          <p class="dz-sub">
+            MP3 · WAV · OGG · FLAC · M4A &nbsp;—&nbsp; clique para selecionar
+          </p>
+        </div>
+      </div>
+
+      <!-- EDITOR -->
+      <div class="editor" id="editor">
+        <div class="file-bar">
+          <div class="file-meta">
+            <span class="file-indicator"></span>
+            <span class="file-name" id="fileName">—</span>
+            <span class="file-dur" id="fileDur">0:00</span>
+          </div>
+          <button class="btn ghost xs" id="btnNewFile">↩ Trocar</button>
+        </div>
+
+        <!-- WAVEFORM -->
+        <div class="wave-wrap">
+          <div class="wave-box" id="waveBox">
+            <canvas id="waveCanvas"></canvas>
+            <div class="sel-overlay" id="selOverlay"></div>
+            <div class="playhead" id="playhead"></div>
+          </div>
+          <div class="timeline" id="timeline">
+            <span id="tA">0:00</span><span id="tB"></span><span id="tC"></span
+            ><span id="tD"></span><span id="tE">0:00</span>
+          </div>
+        </div>
+
+        <!-- TRANSPORT -->
+        <div class="transport">
+          <div class="tport-l">
+            <button class="btn primary icon" id="btnPlay">
+              <svg id="iPlay" width="13" height="13" viewBox="0 0 13 13">
+                <path d="M2.5 1.5l9 5-9 5z" fill="currentColor" />
+              </svg>
+              <svg
+                id="iPause"
+                width="13"
+                height="13"
+                viewBox="0 0 13 13"
+                style="display: none"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="3.5"
+                  height="9"
+                  rx="1"
+                  fill="currentColor"
+                />
+                <rect
+                  x="7.5"
+                  y="2"
+                  width="3.5"
+                  height="9"
+                  rx="1"
+                  fill="currentColor"
+                />
+              </svg>
+              <span id="playLabel">Play</span>
+            </button>
+            <button class="btn ghost icon" id="btnStop">
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <rect
+                  x="2"
+                  y="2"
+                  width="9"
+                  height="9"
+                  rx="1"
+                  fill="currentColor"
+                />
+              </svg>
+              Stop
+            </button>
+            <div class="time-display" id="posDisplay">0:00</div>
+          </div>
+          <div class="tport-c">
+            <button class="btn ghost icon tool" id="btnSelMode">
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path
+                  d="M3 1v11M10 1v11M1 3.5h2M1 9.5h2M10 3.5h2M10 9.5h2"
+                  stroke="currentColor"
+                  stroke-width="1.4"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Selecionar
+            </button>
+            <button class="btn ghost icon tool danger" id="btnCut" disabled>
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <circle
+                  cx="3.5"
+                  cy="3.5"
+                  r="1.8"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                />
+                <circle
+                  cx="3.5"
+                  cy="9.5"
+                  r="1.8"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                />
+                <path
+                  d="M5 4.2l6.5 5M5 8.8l6.5-5"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                />
+              </svg>
+              Cortar
+            </button>
+            <button class="btn ghost icon tool" id="btnSplit" disabled>
+              <svg width="13" height="13" viewBox="0 0 13 13">
+                <path
+                  d="M6.5 1v11M2 5l4.5-4 4.5 4M2 8l4.5 4 4.5-4"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Dividir
+            </button>
+          </div>
+          <div class="tport-r">
+            <button class="btn ghost xs" id="btnUndo" disabled>
+              ↩ Desfazer
+            </button>
+            <button class="btn ghost xs danger" id="btnReset">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- BANNERS -->
+        <div class="banner info" id="splitBanner" style="display: none">
+          <span class="banner-icon">◈</span>
+          <span id="splitText">0 pontos de divisão</span>
+          <button class="btn ghost xs" id="btnClearSplits">Limpar</button>
+        </div>
+        <div class="banner sel" id="selBanner" style="display: none">
+          Seleção: <strong id="selInfo">—</strong>
+        </div>
+
+        <!-- FX -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">EFEITOS</span>
+            <button class="btn ghost xs" id="btnResetFx">Resetar</button>
+          </div>
+          <div class="fx-grid">
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Volume</span
+                ><span class="fx-val" id="vVol">100%</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sVol"
+                min="0"
+                max="200"
+                value="100"
+                step="1"
+              />
+              <div class="sl-range"><span>0%</span><span>200%</span></div>
+            </div>
+
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Speed</span
+                ><span class="fx-val" id="vSpeed">1.00×</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sSpeed"
+                min="25"
+                max="400"
+                value="100"
+                step="1"
+              />
+              <div class="sl-range"><span>0.25×</span><span>4×</span></div>
+            </div>
+
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Pitch</span
+                ><span class="fx-val" id="vPitch">0 st</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sPitch"
+                min="-24"
+                max="24"
+                value="0"
+                step="1"
+              />
+              <div class="sl-range"><span>-24 st</span><span>+24 st</span></div>
+            </div>
+
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Bass Boost</span
+                ><span class="fx-val" id="vBass">0 dB</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sBass"
+                min="-20"
+                max="20"
+                value="0"
+                step="1"
+              />
+              <div class="sl-range"><span>-20 dB</span><span>+20 dB</span></div>
+            </div>
+
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Reverb</span
+                ><span class="fx-val" id="vReverb">0%</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sReverb"
+                min="0"
+                max="100"
+                value="0"
+                step="1"
+              />
+              <div class="sl-range"><span>0%</span><span>100%</span></div>
+            </div>
+
+            <div class="fx-card">
+              <div class="fx-row">
+                <span class="fx-name">Reverb Decay</span
+                ><span class="fx-val" id="vDecay">1.5s</span>
+              </div>
+              <input
+                type="range"
+                class="sl"
+                id="sDecay"
+                min="1"
+                max="60"
+                value="15"
+                step="1"
+              />
+              <div class="sl-range"><span>0.1s</span><span>6s</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXPORT -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">EXPORTAR</span>
+            <div class="fmt-toggle">
+              <label class="fmt-opt"
+                ><input type="radio" name="fmt" value="wav" checked /><span
+                  >WAV</span
+                ></label
+              >
+              <label class="fmt-opt"
+                ><input type="radio" name="fmt" value="mp3" /><span
+                  >MP3</span
+                ></label
+              >
+            </div>
+          </div>
+          <div class="export-row">
+            <div class="mp3-opts" id="mp3Opts" style="display: none">
+              <label class="sl-label">Qualidade MP3</label>
+              <select id="mp3Quality">
+                <option value="0">320 kbps — Melhor</option>
+                <option value="2" selected>192 kbps — Alta</option>
+                <option value="4">128 kbps — Padrão</option>
+                <option value="7">96 kbps — Pequeno</option>
+              </select>
+            </div>
+            <div class="export-btns">
+              <button class="btn secondary icon" id="btnPreview">
+                <svg width="13" height="13" viewBox="0 0 13 13">
+                  <path d="M2.5 1.5l9 5-9 5z" fill="currentColor" />
+                </svg>
+                Preview com efeitos
+              </button>
+              <button class="btn accent icon" id="btnExport">
+                <svg width="13" height="13" viewBox="0 0 13 13">
+                  <path
+                    d="M6.5 1v8M2.5 6l4 4 4-4M1 11h11"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                Exportar
+              </button>
+            </div>
+          </div>
+          <div class="progress-wrap" id="progressWrap" style="display: none">
+            <div class="progress-track">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-label" id="progressLabel"
+              >Processando...</span
+            >
+          </div>
+        </div>
+
+        <!-- STATUS -->
+        <div class="statusbar">
+          <span><span class="dot green"></span><span id="sDur">—</span></span>
+          <span
+            ><span class="dot blue"></span
+            ><span id="sSel">sem seleção</span></span
+          >
+          <span
+            ><span class="dot amber" id="fxDot"></span
+            ><span id="sFx">efeitos neutros</span></span
+          >
+        </div>
+      </div>
+      <!-- /editor -->
+    </div>
+    <!-- /app -->
+
+    <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
